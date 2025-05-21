@@ -1,14 +1,23 @@
 #!/bin/bash
 
-# Aller dans le dossier du projet
-cd "$(dirname "$0")/scripts"
+# Déterminer le dossier de base du projet
+if [ -d "/app" ]; then
+  # En environnement Docker
+  BASE_DIR="/app"
+else
+  # En environnement local
+  BASE_DIR="$(dirname "$0")"
+fi
+
+# Aller dans le dossier des scripts
+cd "$BASE_DIR/scripts"
 
 # Lancer le pipeline Python
 echo "[INFO] Exécution du pipeline de veille IA..."
 python3 run_all.py
 
 # Chemin du résumé généré (à adapter si besoin)
-DIGEST_FILE="$(dirname "$0")/outputs/digest_hebdo_20250521.md"
+DIGEST_FILE="$BASE_DIR/outputs/digest_hebdo_20250521.md"
 
 if [ -f "$DIGEST_FILE" ]; then
     echo "[INFO] Résumé généré : $DIGEST_FILE"
