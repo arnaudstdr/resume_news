@@ -264,7 +264,13 @@ class DatabaseManager:
         """
         try:
             query = '''
-                SELECT a.*, s.name as source_name, GROUP_CONCAT(c.name) as categories
+                SELECT 
+                    a.*,
+                    s.name as source_name,
+                    s.url as source_url,
+                    GROUP_CONCAT(c.name) as categories,
+                    a.summary as summary,
+                    a.content as content
                 FROM articles a
                 JOIN sources s ON a.source_id = s.id
                 LEFT JOIN article_categories ac ON a.id = ac.article_id
@@ -287,6 +293,12 @@ class DatabaseManager:
                     article['categories'] = article['categories'].split(',')
                 else:
                     article['categories'] = []
+                    
+                # S'assurer que les champs de contenu ne sont pas None
+                for field in ['summary', 'content']:
+                    if article.get(field) is None:
+                        article[field] = ''
+                        
                 articles.append(article)
             
             return articles
@@ -445,4 +457,4 @@ class DatabaseManager:
             return stats
         except sqlite3.Error as e:
             logger.error(f"Erreur lors de la récupération des statistiques: {str(e)}")
-            raise 
+            raise

@@ -48,6 +48,7 @@ class WeeklyDigest:
                                   "data", "rss_articles.db")
             
         self.db_manager = DatabaseManager(db_path)
+        self.db_manager.connect()  # Connexion à la base de données dès l'initialisation
         self.model_name = model_name
         self.client = InferenceClient(model=model_name)
         logger.info(f"Initialisation du digest hebdomadaire avec le modèle {model_name}")
@@ -78,7 +79,7 @@ class WeeklyDigest:
     def prepare_content_for_digest(self, articles: List[Dict[str, Any]]) -> str:
         """
         Prépare le contenu des articles pour la génération du résumé.
-        Utilise le contenu s'il est disponible, sinon utilise le titre.
+        Utilise en priorité le résumé, puis la description, puis le contenu.
         
         Args:
             articles: Liste des articles à résumer
@@ -102,23 +103,36 @@ class WeeklyDigest:
             
             for article in source_articles:
                 title = article.get('title', 'Sans titre')
-                content = article.get('content', '')
                 summary = article.get('summary', '')
+                description = article.get('description', '')
+                content = article.get('content', '')
                 url = article.get('url', '')
+                date = article.get('date', '')
                 
-                content_list.append(f"\n### {title}")
-                content_list.append(f"URL: {url}")
+                # Formatage de la date si disponible
+                if date:
+                    try:
+                        date_obj = datetime.fromisoformat(date.replace('Z', '+00:00'))
+                        date_str = date_obj.strftime("%d/%m/%Y")
+                        content_list.append(f"\n### [{title}]({url}) - {date_str}")
+                    except:
+                        content_list.append(f"\n### [{title}]({url})")
+                else:
+                    content_list.append(f"\n### [{title}]({url})")
                 
-                if summary and len(summary) > 10:
-                    content_list.append(f"Résumé: {summary}")
-                elif content and len(content) > 10:
+                # Utiliser le meilleur contenu disponible
+                if summary and len(summary) > 50:
+                    content_list.append(f"Résumé : {summary}")
+                elif description and len(description) > 50:
+                    content_list.append(f"Description : {description}")
+                elif content and len(content) > 50:
                     # Limiter la taille du contenu pour ne pas dépasser le contexte du modèle
-                    content = content[:1000] + "..." if len(content) > 1000 else content
-                    content_list.append(f"Contenu: {content}")
+                    content = content[:2000] + "..." if len(content) > 2000 else content
+                    content_list.append(f"Contenu : {content}")
                 
         return "\n".join(content_list)
     
-    def ollama_generate(self, prompt: str, model: str = "mistral", max_tokens: int = 1000) -> str:
+    def ollama_generate(self, prompt: str, model: str = "mistral", max_tokens: int = 3500) -> str:
         """
         Utilise l'API locale d'Ollama pour générer du texte avec le modèle spécifié.
         """
@@ -131,7 +145,7 @@ class WeeklyDigest:
                     "stream": False,
                     "options": {"num_predict": max_tokens}
                 },
-                timeout=120
+                timeout=180
             )
             response.raise_for_status()
             data = response.json()
@@ -140,13 +154,13 @@ class WeeklyDigest:
             logger.error(f"Erreur lors de la génération avec Ollama : {str(e)}")
             return f"Erreur lors de la génération avec Ollama : {str(e)}"
 
-    def generate_digest(self, days: int = 7, max_tokens: int = 1000, limit: Optional[int] = None) -> str:
+    def generate_digest(self, days: int = 7, max_tokens: int = 3500, limit: Optional[int] = None) -> str:
         """
         Génère un résumé hebdomadaire des articles récents.
         
         Args:
             days: Nombre de jours à considérer
-            max_tokens: Nombre maximum de tokens pour la génération
+            max_tokens: Nombre maximum de tokens pour la génération (défaut: 3000)
             limit: Nombre maximum d'articles à résumer (None = pas de limite raisonnable)
             
         Returns:
@@ -154,10 +168,12 @@ class WeeklyDigest:
         """
         try:
             # Récupérer les articles
-            articles = self.get_weekly_articles(days, limit=limit)
+            # Note: La connexion est déjà établie dans l'initialiseur
+            articles = self.db_manager.get_recent_articles(limit=1000 if limit is None else limit, days=days)
             
             if not articles:
                 logger.warning("Aucun article trouvé pour la période spécifiée.")
+                self.db_manager.disconnect()  # Assurons-nous de fermer la connexion
                 return "Aucun article disponible pour cette semaine."
             
             # Vérifier si au moins quelques articles ont du contenu ou un résumé
@@ -177,31 +193,72 @@ class WeeklyDigest:
             date_range = f"{start_date.strftime('%d/%m/%Y')} au {end_date.strftime('%d/%m/%Y')}"
             
             # Créer le prompt pour Mistral (en français)
-            prompt = f"""Voici une liste d'articles sur l'intelligence artificielle publiés du {date_range}.
+            prompt = f"""Tu es un expert en intelligence artificielle chargé de produire une **veille stratégique, synthétique et à forte valeur ajoutée** sur les dernières actualités en IA.
+
+Voici une compilation d'articles publiés du {date_range} sur l'intelligence artificielle :
 
 {content}
 
-Rédige un résumé hebdomadaire synthétique en français sur les actualités importantes en IA durant cette période.
-Le résumé doit être structuré avec :
-1. Une introduction résumant les tendances principales de la semaine
-2. 3 à 5 points clés ou thématiques qui ressortent de ces articles
-3. Une courte conclusion
+Rédige un **rapport de veille approfondi en français** en suivant cette structure précise :
 
-Format souhaité : Markdown
-Langue : Français
-Ton : Professionnel et informatif
-Longueur : Environ 500 mots
+1. **Résumé exécutif** (300-400 mots)
+   - Synthèse des tendances, signaux faibles, ruptures, innovations et signaux d’alerte de la semaine
+   - Ce qui est vraiment nouveau, impactant ou susceptible de changer la donne dans l’écosystème IA
+   - Mise en perspective des faits marquants
+
+2. **Chiffres clés de la semaine**
+   - Montants d'investissements, dates importantes, annonces majeures, etc. (si pertinent)
+
+3. **Avancées technologiques clés**
+   - Innovations techniques, publications scientifiques, nouveaux modèles ou architectures d'IA
+   - Focus sur les percées ou tendances émergentes
+
+4. **Initiatives industrielles**
+   - Annonces, partenariats, investissements, acquisitions majeurs
+   - Ce qui peut transformer le marché ou la compétition
+
+5. **Enjeux sociétaux et réglementaires**
+   - Développements réglementaires, débats éthiques, signaux d’alerte sociétaux
+   - Impacts potentiels sur la société, l’économie ou la gouvernance
+
+6. **Projets open-source et communauté**
+   - Nouvelles librairies, outils, contributions communautaires, événements
+   - Ce qui fait avancer l’écosystème open-source IA
+
+7. **Sélection de lectures complémentaires**
+   - Liste organisée des articles les plus importants ou pertinents
+   - Classement par thématique
+   - Inclure tous les liens pertinents
+
+**Directives importantes :**
+- Priorise l’analyse, la mise en perspective et la sélection des informations les plus stratégiques.
+- Ne cherche pas à tout lister, mais à faire ressortir ce qui compte vraiment pour rester à la pointe de l’innovation IA.
+- Format : Markdown bien structuré avec titres et sous-titres
+- Style : Professionnel, factuel, synthétique et objectif
+- Langue : Français uniquement, style clair et précis
+- Si possible, termine chaque section par une phrase de mise en perspective ou d’alerte.
 """
+            
             logger.info(f"Génération du résumé hebdomadaire avec Ollama (modèle : mistral)...")
             response = self.ollama_generate(prompt, model="mistral", max_tokens=max_tokens)
+            
+            # Déconnexion de la base de données
+            self.db_manager.disconnect()
+            
             if not response or len(response) < 50:
                 logger.error(f"Réponse trop courte ou vide d'Ollama: '{response}'")
                 return f"# Erreur de génération du résumé\n\nOllama n'a pas réussi à générer un résumé de qualité. Réponse reçue: {response}"
+                
             header = f"# Veille IA: Résumé hebdomadaire du {date_range}\n\n"
             return header + response
                 
         except Exception as e:
             logger.error(f"Erreur lors de la génération du résumé: {str(e)}", exc_info=True)
+            # S'assurer que la connexion est fermée même en cas d'erreur
+            try:
+                self.db_manager.disconnect()
+            except:
+                pass
             return f"Erreur lors de la génération du résumé: {str(e)}"
     
     def save_digest(self, digest: str, output_dir: Optional[str] = None) -> str:
