@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Any
 import logging
 from bs4 import BeautifulSoup
 import html
-from transformers import pipeline
+from transformers.pipelines import pipeline
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
