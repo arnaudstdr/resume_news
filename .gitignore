@@ -17,3 +17,4 @@ outputs/normalized/
 
 # Fichiers de configuration locaux (à adapter si besoin)
 .env
+screenshots/

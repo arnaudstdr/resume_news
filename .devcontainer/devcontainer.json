@@ -1,5 +1,5 @@
 {
-    "name": "mlops-zoomcamp",
+    "name": "resume_ai",
     "image": "mcr.microsoft.com/devcontainers/python:3.10-bullseye",
     "postCreateCommand": "pip install -r requirements.txt",
     "customizations": {
