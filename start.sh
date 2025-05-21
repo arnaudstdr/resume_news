@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Aller dans le dossier du projet
-cd /workspaces/resume_news/scripts/
+cd /scripts/
 
 # Lancer le pipeline Python
 echo "[INFO] Exécution du pipeline de veille IA..."
