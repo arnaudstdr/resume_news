@@ -1,8 +1,11 @@
 # 🤖 Pipeline de Veille IA
 
-[![CI - Build and Test](https://github.com/arnaudstdr/veille-ia/actions/workflows/deploy.yml/badge.svg)](https://github.com/arnaudstdr/veille-ia/actions/workflows/deploy.yml)
+
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Dernier commit](https://img.shields.io/github/last-commit/arnaudstdr/resume_news)
+![Dépendances](https://img.shields.io/librariesio/release/pypi/requests)
+![Stars](https://img.shields.io/github/stars/arnaudstdr/resume_news?style=social)
 
 Pipeline complet pour la **veille stratégique sur l’actualité de l’IA** : scraping RSS, normalisation, stockage, génération automatique d’un résumé hebdomadaire structuré et pertinent.
 
