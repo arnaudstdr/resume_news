@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Aller dans le dossier du projet
-cd /workspaces/veille_ai/scripts/
+cd /workspaces/resume_news/scripts/
 
 # Lancer le pipeline Python
 echo "[INFO] Exécution du pipeline de veille IA..."
 python3 run_all.py
 
 # Chemin du résumé généré (à adapter si besoin)
-DIGEST_FILE="/workspaces/veille_ai/outputs/digest_hebdo_20250521.md"
+DIGEST_FILE="/workspaces/resume_news/outputs/digest_hebdo_20250521.md"
 
 if [ -f "$DIGEST_FILE" ]; then
     echo "[INFO] Résumé généré : $DIGEST_FILE"
