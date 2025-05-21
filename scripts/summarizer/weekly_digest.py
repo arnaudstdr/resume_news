@@ -35,7 +35,7 @@ class WeeklyDigest:
     en utilisant un LLM open source compatible text-generation.
     """
 
-    def __init__(self, db_path: str = None, model_name: str = "mistralai/Mistral-7B-Instruct-v0.3"):
+    def __init__(self, db_path: Optional[str] = None, model_name: str = "mistralai/Mistral-7B-Instruct-v0.3"):
         """
         Initialise le générateur de résumé hebdomadaire.
         
@@ -52,19 +52,21 @@ class WeeklyDigest:
         self.client = InferenceClient(model=model_name)
         logger.info(f"Initialisation du digest hebdomadaire avec le modèle {model_name}")
         
-    def get_weekly_articles(self, days: int = 7) -> List[Dict[str, Any]]:
+    def get_weekly_articles(self, days: int = 7, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Récupère les articles publiés au cours des derniers jours.
         
         Args:
             days: Nombre de jours à considérer
+            limit: Nombre maximum d'articles à récupérer (None = pas de limite raisonnable)
             
         Returns:
             Liste des articles récents
         """
         try:
             self.db_manager.connect()
-            articles = self.db_manager.get_recent_articles(days=days)
+            # Par défaut, on met une limite très haute si non précisé
+            articles = self.db_manager.get_recent_articles(limit=1000 if limit is None else limit, days=days)
             self.db_manager.disconnect()
             
             logger.info(f"Récupération de {len(articles)} articles des {days} derniers jours")
@@ -138,20 +140,21 @@ class WeeklyDigest:
             logger.error(f"Erreur lors de la génération avec Ollama : {str(e)}")
             return f"Erreur lors de la génération avec Ollama : {str(e)}"
 
-    def generate_digest(self, days: int = 7, max_tokens: int = 1000) -> str:
+    def generate_digest(self, days: int = 7, max_tokens: int = 1000, limit: Optional[int] = None) -> str:
         """
         Génère un résumé hebdomadaire des articles récents.
         
         Args:
             days: Nombre de jours à considérer
             max_tokens: Nombre maximum de tokens pour la génération
+            limit: Nombre maximum d'articles à résumer (None = pas de limite raisonnable)
             
         Returns:
             Résumé hebdomadaire au format texte
         """
         try:
             # Récupérer les articles
-            articles = self.get_weekly_articles(days)
+            articles = self.get_weekly_articles(days, limit=limit)
             
             if not articles:
                 logger.warning("Aucun article trouvé pour la période spécifiée.")
@@ -243,8 +246,8 @@ def main():
         # Initialiser le digest hebdomadaire
         digest = WeeklyDigest()
         
-        # Générer le résumé
-        summary = digest.generate_digest()
+        # Générer le résumé avec tous les articles de la semaine (limit élevé)
+        summary = digest.generate_digest(limit=1000)
         
         # Sauvegarder le résumé
         output_path = digest.save_digest(summary)

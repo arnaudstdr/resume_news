@@ -206,6 +206,7 @@ class DataNormalizer:
     def generate_summary(self, article: Dict[str, Any]) -> str:
         """
         Génère un résumé pour un article en utilisant le LLM.
+        Utilise le champ 'content' si disponible, sinon 'summary'.
 
         Args:
             article: Dictionnaire contenant les données d'un article
@@ -216,10 +217,17 @@ class DataNormalizer:
         try:
             content = article.get('content', '')
             if not content or not isinstance(content, str) or not content.strip():
-                logger.warning("Aucun contenu à résumer pour l'article")
+                # Fallback sur summary si content vide
+                content = article.get('summary', '')
+            if not content or not isinstance(content, str) or not content.strip():
+                logger.warning("Aucun contenu ni résumé à résumer pour l'article")
                 return ""
-            summary = self.summarizer(content, max_length=130, min_length=30, do_sample=False)[0]['summary_text']
-            return summary
+            result = self.summarizer(content, max_length=130, min_length=30, do_sample=False)
+            if result and isinstance(result, list) and isinstance(result[0], dict) and 'summary_text' in result[0]:
+                return result[0]['summary_text']
+            else:
+                logger.error("Le pipeline de summarization n'a pas retourné de texte de résumé.")
+                return ""
         except Exception as e:
             logger.error(f"Erreur lors de la génération du résumé: {str(e)}")
             return ""

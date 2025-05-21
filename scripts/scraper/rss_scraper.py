@@ -101,9 +101,28 @@ def scrape_rss_source(name: str, url: str, days_limit: int = DAYS_LIMIT) -> List
                 "source": name
             }
 
-            if hasattr(entry, 'published_parsed'):
+            # Ajout des champs de contenu si présents
+            if 'summary' in entry:
+                article_data['summary'] = entry['summary']
+            if 'description' in entry:
+                article_data['description'] = entry['description']
+            if 'content' in entry:
+                # Peut être une liste de dicts ou un seul dict
+                content = entry['content']
+                if isinstance(content, list) and len(content) > 0 and isinstance(content[0], dict):
+                    article_data['content'] = content[0].get('value', '')
+                elif isinstance(content, dict):
+                    article_data['content'] = content.get('value', '')
+                else:
+                    article_data['content'] = str(content)
+            if 'content:encoded' in entry:
+                article_data['content_encoded'] = entry['content:encoded']
+
+            # Gestion de la date
+            published_parsed = entry.get('published_parsed')
+            if published_parsed and isinstance(published_parsed, tuple):
                 try:
-                    published = datetime(*entry.published_parsed[:6])
+                    published = datetime(*published_parsed[:6])
                     if published >= date_limit:
                         article_data["date"] = published.isoformat()
                         results.append(article_data)
@@ -171,4 +190,4 @@ if __name__ == "__main__":
         exit(1)
     except Exception as e:
         logger.error(f"Erreur inattendue: {str(e)}")
-        exit(1)    
+        exit(1)
