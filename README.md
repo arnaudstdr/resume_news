@@ -1,58 +1,83 @@
-# Pipeline de veille IA
+# 🤖 Pipeline de Veille IA
 
-Ce projet propose un pipeline complet de veille sur l’actualité de l’IA : scraping RSS, normalisation, insertion en base, génération d’un résumé hebdomadaire pertinent et structuré.
+[![CI - Build and Test](https://github.com/arnaudstdr/veille-ia/actions/workflows/deploy.yml/badge.svg)](https://github.com/arnaudstdr/veille-ia/actions/workflows/deploy.yml)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-## Fonctionnalités
-- Scraping de flux RSS IA
-- Normalisation et stockage en base SQLite
-- Génération automatique d’un résumé stratégique hebdomadaire
-- Expérience utilisateur fluide (un seul script à lancer)
+Pipeline complet pour la **veille stratégique sur l’actualité de l’IA** : scraping RSS, normalisation, stockage, génération automatique d’un résumé hebdomadaire structuré et pertinent.
 
-## Prérequis
-- [Docker](https://www.docker.com/) installé sur votre machine
-- [Ollama](https://ollama.com/) installé et lancé en local
-- Le modèle `mistral` téléchargé dans Ollama (`ollama run mistral`)
+## ✨ Fonctionnalités
+- 🔎 Scraping de flux RSS IA
+- 🧹 Normalisation et stockage en base SQLite
+- 🗃️ Génération automatique d’un résumé stratégique hebdomadaire (Markdown)
+- 🚀 Expérience utilisateur fluide (un seul script à lancer)
+- 🐳 Dockerisation complète
+- 📜 Documentation claire et logs détaillés
 
-## Utilisation rapide
+## 📦 Installation & Lancement rapide
 
-### 1. Construction de l’image Docker
+### 1. Cloner le repo
 ```bash
-docker build -t veille-ia .
+git clone https://github.com/arnaudstdr/resume_news.git
+cd resume_news
 ```
 
-### 2. Lancement du pipeline
+### 2. Construction de l’image Docker
 ```bash
-docker run --rm -it veille-ia
+docker build -t resume_news .
 ```
 
-#### 💡 Astuce : récupérer les résultats sur votre machine
-Pour accéder aux fichiers générés (`outputs/`) sur votre machine hôte, montez le dossier en volume :
+### 3. Lancement du pipeline
 ```bash
-docker run --rm -it -v $(pwd)/outputs:/app/outputs veille-ia
+docker run --rm -it resume_news
 ```
-Ainsi, le dossier `outputs` du conteneur sera synchronisé avec celui de votre projet local.
 
-Le pipeline s’exécute automatiquement et le résumé généré s’ouvre dans VS Code (si disponible dans le conteneur) ou s’affiche dans le terminal.
+#### 💡 Astuce : synchroniser les résultats sur votre machine
+Pour accéder aux fichiers générés (`outputs/`) sur votre machine hôte :
+```bash
+docker run --rm -it -v $(pwd)/outputs:/app/outputs resume_news
+```
 
-### 3. Résultats
-- Le résumé hebdomadaire est généré dans `outputs/digest_hebdo_<date>.md`
-- Les articles normalisés sont dans `outputs/normalized/normalized_articles.json`
+Le résumé généré s’ouvre dans VS Code (si disponible) ou s’affiche dans le terminal.
 
-## Personnalisation
-- Modifiez les flux RSS dans `scripts/scraper/flux_rss.json`.
-- Adaptez les scripts Python selon vos besoins (scraping, résumé, etc).
+## 🐳 Utilisation avec Dev Container
 
-## Développement local (hors Docker)
-- Installez Python 3.10+
-- Installez les dépendances : `pip install -r requirements.txt`
-- Lancez le pipeline : `bash start.sh`
+Ce projet est prêt pour [Dev Containers](https://containers.dev/) de VS Code.
+- Ouvrez le dossier dans VS Code
+- Cliquez sur `Reopen in Container` ou utilisez la palette de commandes (`F1`)
 
-## Bonnes pratiques MLOps
-- Conteneurisation complète (Docker)
-- Automatisation du pipeline
-- Documentation claire
-- Logs générés dans le dossier du projet
+Vous pouvez lancer le pipeline, éditer le code, exécuter les tests, etc. dans un environnement isolé.
 
----
+## 🔌 Structure des dossiers
+| Dossier/Fichier         | Rôle principal                                 |
+|------------------------|------------------------------------------------|
+| `scripts/`             | Scripts Python principaux du pipeline          |
+| `scripts/scraper/`     | Scraping RSS et gestion des flux              |
+| `scripts/normalizer/`  | Normalisation des articles                    |
+| `scripts/database/`    | Gestion de la base SQLite                     |
+| `scripts/summarizer/`  | Génération du résumé hebdomadaire             |
+| `outputs/`             | Résumés générés et articles normalisés        |
+| `data/`                | Base de données SQLite                        |
+| `start.sh`             | Script principal de lancement                 |
+| `Dockerfile`           | Image Docker du projet                        |
 
-**Auteur :** Votre Nom — 2025
+## 🔌 Endpoints & Résultats
+- Résumé hebdomadaire généré dans `outputs/digest_hebdo_<date>.md`
+- Articles normalisés dans `outputs/normalized/normalized_articles.json`
+
+## 🧪 Tests
+
+### Lancer les tests manuellement
+```bash
+pytest scripts/normalizer/test_data_normalizer.py
+```
+
+## 🛠️ Personnalisation
+- Modifiez les flux RSS dans `scripts/scraper/flux_rss.json`
+- Adaptez les scripts Python selon vos besoins (scraping, résumé, etc.)
+
+## 🧠 Auteur
+👤 Arnaud STADLER - MLOps en reconversion passionné de data, de vélo et d'IA 🚴‍♂️🧠
+
+## 📄 Licence
+Ce projet est open-source sous licence [MIT](LICENSE). Vous pouvez l’utiliser, le modifier et le redistribuer librement dans le respect de cette licence.
