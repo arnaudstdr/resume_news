@@ -1,5 +1,4 @@
 beautifulsoup4==4.13.4
-bitsandbytes==0.42.0
 certifi==2025.4.26
 charset-normalizer==3.4.2
 dotenv==0.9.9
@@ -27,7 +26,6 @@ smmap==5.0.2
 soupsieve==2.7
 sympy==1.14.0
 tokenizers==0.21.1
-torch==2.7.0
 tqdm==4.67.1
 transformers==4.52.1
 typing_extensions==4.13.2
