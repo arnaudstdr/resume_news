@@ -65,11 +65,8 @@ class WeeklyDigest:
             Liste des articles récents
         """
         try:
-            self.db_manager.connect()
-            # Par défaut, on met une limite très haute si non précisé
+            # Suppression de l'ouverture/fermeture de connexion ici
             articles = self.db_manager.get_recent_articles(limit=1000 if limit is None else limit, days=days)
-            self.db_manager.disconnect()
-            
             logger.info(f"Récupération de {len(articles)} articles des {days} derniers jours")
             return articles
         except Exception as e:
@@ -214,7 +211,7 @@ Rédige un **rapport de veille approfondi en français** en suivant cette struct
    - Focus sur les percées ou tendances émergentes
 
 4. **Initiatives industrielles**
-   - Annonces, partenariats, investissements, acquisitions majeurs
+   - Annonces, partenariats, investissements, acquisitions majeures
    - Ce qui peut transformer le marché ou la compétition
 
 5. **Enjeux sociétaux et réglementaires**

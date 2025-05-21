@@ -34,6 +34,9 @@ OUTPUTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 NORMALIZED_DIR = os.path.join(OUTPUTS_DIR, "normalized")
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "rss_articles.db")
 
+# S'assurer que le dossier data existe
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+
 
 def main():
     # 1. Scraping RSS
@@ -86,6 +89,10 @@ def main():
     logger.info("[4/4] Génération du résumé hebdomadaire...")
     try:
         digest = WeeklyDigest(db_path=DB_PATH)
+        articles = digest.get_weekly_articles(limit=1000)
+        if not articles:
+            logger.warning("Aucun article trouvé pour générer le résumé. Résumé non généré.")
+            return
         summary = digest.generate_digest(limit=1000)
         output_path = digest.save_digest(summary)
         logger.info(f"Résumé hebdomadaire généré : {output_path}")
