@@ -1,6 +1,4 @@
-accelerate==1.7.0
 beautifulsoup4==4.13.4
-bitsandbytes==0.42.0
 certifi==2025.4.26
 charset-normalizer==3.4.2
 dotenv==0.9.9
@@ -9,7 +7,6 @@ filelock==3.18.0
 fsspec==2025.5.0
 gitdb==4.0.12
 GitPython==3.1.41
-huggingface-hub==0.31.4
 idna==3.10
 Jinja2==3.1.6
 MarkupSafe==3.0.2
@@ -22,15 +19,11 @@ python-dotenv==1.1.0
 PyYAML==6.0.2
 regex==2024.11.6
 requests==2.32.3
-safetensors==0.5.3
 scipy==1.15.3
 sgmllib3k==1.0.0
 smmap==5.0.2
 soupsieve==2.7
 sympy==1.14.0
-tokenizers==0.21.1
-torch==2.7.0
 tqdm==4.67.1
-transformers==4.52.1
 typing_extensions==4.13.2
 urllib3==2.4.0
