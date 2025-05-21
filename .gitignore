@@ -1,0 +1,19 @@
+# Fichiers de log
+*.log
+
+# Bases de données locales
+*.db
+data/
+
+# Fichiers de sortie
+outputs/
+
+# Fichiers compilés Python
+__pycache__/
+*.pyc
+
+# Dossiers temporaires ou normalisés
+outputs/normalized/
+
+# Fichiers de configuration locaux (à adapter si besoin)
+.env

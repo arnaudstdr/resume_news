@@ -1,0 +1,22 @@
+[
+    {
+        "name": "Hugging Face Blog",
+        "url": "https://huggingface.co/blog/feed.xml"
+    },
+    {
+        "name": "Google Research",
+        "url": "https://research.google/blog/rss/"
+    },
+    {
+        "name": "MIT AI News",
+        "url": "http://news.mit.edu/rss/topic/artificial-intelligence2"
+    },
+    {
+        "name": "KDnuggets",
+        "url": "http://feeds.feedburner.com/kdnuggets-data-mining-analytics"
+    },
+    {
+        "name": "ActuIA",
+        "url": "https://www.actuia.com/feed/"
+    }
+] 
