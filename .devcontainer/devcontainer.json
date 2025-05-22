@@ -1,6 +1,7 @@
 {
     "name": "resume_ai",
     "image": "mcr.microsoft.com/devcontainers/python:3.10-bullseye",
+    "runArgs": ["--name", "resume_ai"],
     "postCreateCommand": "pip install -r requirements.txt",
     "customizations": {
         "vscode": {
