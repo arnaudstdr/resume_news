@@ -97,6 +97,15 @@ def main():
         output_path = digest.save_digest(summary)
         logger.info(f"Résumé hebdomadaire généré : {output_path}")
         print(f"Résumé hebdomadaire généré : {output_path}")
+        # Génération du markdown complet des articles de la semaine
+        digest.db_manager.connect()
+        full_md_path = digest.save_full_articles_markdown(days=7, limit=1000)
+        digest.db_manager.disconnect()
+        if full_md_path:
+            logger.info(f"Markdown complet des articles généré : {full_md_path}")
+            print(f"Markdown complet des articles généré : {full_md_path}")
+        else:
+            logger.warning("Aucun article à inclure dans le markdown complet.")
     except Exception as e:
         logger.error(f"Erreur lors de la génération du résumé : {e}")
         return
