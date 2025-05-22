@@ -312,6 +312,48 @@ Rédige un **rapport de veille approfondi en français** en suivant cette struct
         logger.info(f"Résumé hebdomadaire sauvegardé dans {output_path}")
         return output_path
 
+    def save_full_articles_markdown(self, days: int = 7, output_dir: Optional[str] = None, limit: Optional[int] = None) -> str:
+        """
+        Génère un fichier markdown listant tous les articles scrappés de la semaine avec toutes les infos (titre, contenu, lien, etc.).
+        Args:
+            days: Nombre de jours à considérer
+            output_dir: Répertoire de sortie (défaut: outputs)
+            limit: Nombre max d'articles (None = pas de limite raisonnable)
+        Returns:
+            Chemin du fichier markdown généré
+        """
+        if output_dir is None:
+            output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "outputs")
+        os.makedirs(output_dir, exist_ok=True)
+        articles = self.db_manager.get_recent_articles(limit=1000 if limit is None else limit, days=days)
+        if not articles:
+            logger.warning("Aucun article trouvé pour la génération du markdown complet.")
+            return ""
+        filename = f"articles_complets_{datetime.now().strftime('%Y%m%d')}.md"
+        output_path = os.path.join(output_dir, filename)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(f"# Articles scrappés de la semaine ({len(articles)})\n\n")
+            for idx, article in enumerate(articles, 1):
+                title = article.get('title', 'Sans titre')
+                url = article.get('url', '')
+                date = article.get('date', '')
+                content = article.get('content', '')
+                summary = article.get('summary', '')
+                description = article.get('description', '')
+                source = article.get('source_name', article.get('source', 'Inconnu'))
+                f.write(f"## {idx}. [{title}]({url})\n")
+                if date:
+                    f.write(f"**Date :** {date}\n\n")
+                f.write(f"**Source :** {source}\n\n")
+                if summary:
+                    f.write(f"**Résumé :** {summary}\n\n")
+                if description:
+                    f.write(f"**Description :** {description}\n\n")
+                f.write(f"**Contenu :**\n\n{content}\n\n")
+                f.write("---\n\n")
+        logger.info(f"Markdown complet des articles sauvegardé dans {output_path}")
+        return output_path
+
 def main():
     """
     Fonction principale pour générer le résumé hebdomadaire.
@@ -320,15 +362,23 @@ def main():
         dotenv.load_dotenv()
         # Initialiser le digest hebdomadaire
         digest = WeeklyDigest()
-        
+
         # Générer le résumé avec tous les articles de la semaine (limit élevé)
         summary = digest.generate_digest(limit=1000)
-        
+
         # Sauvegarder le résumé
         output_path = digest.save_digest(summary)
-        
         logger.info(f"Génération du résumé hebdomadaire terminée. Fichier: {output_path}")
         print(f"Résumé hebdomadaire généré avec succès: {output_path}")
+
+        # Générer le markdown complet des articles de la semaine
+        digest.db_manager.connect()  # Ré-ouvrir la connexion pour la génération du markdown complet
+        full_md_path = digest.save_full_articles_markdown(days=7, limit=1000)
+        digest.db_manager.disconnect()  # Fermer la connexion après
+        if full_md_path:
+            print(f"Markdown complet des articles généré: {full_md_path}")
+        else:
+            print("Aucun article à inclure dans le markdown complet.")
     except Exception as e:
         logger.error(f"Erreur dans le programme principal: {str(e)}")
         print(f"Erreur: {str(e)}")
