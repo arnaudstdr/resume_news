@@ -2,6 +2,7 @@
 
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
+![Dockerfile](https://img.shields.io/badge/Dockerfile-available-blue?logo=docker)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Dernier commit](https://img.shields.io/github/last-commit/arnaudstdr/resume_news)
 ![Dépendances](https://img.shields.io/librariesio/release/pypi/requests)
