@@ -13,7 +13,6 @@ import requests
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database.db_manager import DatabaseManager
-from huggingface_hub import login, InferenceClient
 
 # Charger automatiquement les variables d'environnement depuis .env
 dotenv.load_dotenv()
@@ -35,13 +34,12 @@ class WeeklyDigest:
     en utilisant un LLM open source compatible text-generation.
     """
 
-    def __init__(self, db_path: Optional[str] = None, model_name: str = "mistralai/Mistral-7B-Instruct-v0.3"):
+    def __init__(self, db_path: Optional[str] = None):
         """
         Initialise le générateur de résumé hebdomadaire.
         
         Args:
             db_path: Chemin vers la base de données SQLite
-            model_name: Nom du modèle à utiliser (par défaut: mistral/Mistral-7B-Instruct-v0.3)
         """
         if db_path is None:
             db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 
@@ -49,9 +47,7 @@ class WeeklyDigest:
             
         self.db_manager = DatabaseManager(db_path)
         self.db_manager.connect()  # Connexion à la base de données dès l'initialisation
-        self.model_name = model_name
-        self.client = InferenceClient(model=model_name)
-        logger.info(f"Initialisation du digest hebdomadaire avec le modèle {model_name}")
+        logger.info(f"Initialisation du digest hebdomadaire")
         
     def get_weekly_articles(self, days: int = 7, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """
@@ -151,7 +147,35 @@ class WeeklyDigest:
             logger.error(f"Erreur lors de la génération avec Ollama : {str(e)}")
             return f"Erreur lors de la génération avec Ollama : {str(e)}"
 
-    def generate_digest(self, days: int = 7, max_tokens: int = 3500, limit: Optional[int] = None) -> str:
+    def mistral_generate(self, prompt: str, max_tokens: int = 3500) -> str:
+        """
+        Utilise l'API HTTP de Mistral Large pour générer du texte avec la clé API stockée dans .env.
+        """
+        api_key = os.environ.get("MISTRAL_API_KEY")
+        if not api_key:
+            logger.error("Clé API Mistral manquante dans .env (MISTRAL_API_KEY)")
+            return "Erreur : clé API Mistral manquante."
+        try:
+            url = "https://api.mistral.ai/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+            data = {
+                "model": "mistral-large-latest",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+                "temperature": 0.7
+            }
+            response = requests.post(url, headers=headers, json=data, timeout=180)
+            response.raise_for_status()
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.error(f"Erreur lors de la génération avec Mistral Large : {str(e)}")
+            return f"Erreur lors de la génération avec Mistral Large : {str(e)}"
+
+    def generate_digest(self, days: int = 7, max_tokens: int = 3500, limit: Optional[int] = None, use_mistral: bool = True) -> str:
         """
         Génère un résumé hebdomadaire des articles récents.
         
@@ -159,6 +183,7 @@ class WeeklyDigest:
             days: Nombre de jours à considérer
             max_tokens: Nombre maximum de tokens pour la génération (défaut: 3000)
             limit: Nombre maximum d'articles à résumer (None = pas de limite raisonnable)
+            use_mistral: Utiliser l'API Mistral (True) ou Ollama (False)
             
         Returns:
             Résumé hebdomadaire au format texte
@@ -236,15 +261,18 @@ Rédige un **rapport de veille approfondi en français** en suivant cette struct
 - Si possible, termine chaque section par une phrase de mise en perspective ou d’alerte.
 """
             
-            logger.info(f"Génération du résumé hebdomadaire avec Ollama (modèle : mistral)...")
-            response = self.ollama_generate(prompt, model="mistral", max_tokens=max_tokens)
+            logger.info(f"Génération du résumé hebdomadaire avec Mistral Large...")
+            if use_mistral:
+                response = self.mistral_generate(prompt, max_tokens=max_tokens)
+            else:
+                response = self.ollama_generate(prompt, model="mistral", max_tokens=max_tokens)
             
             # Déconnexion de la base de données
             self.db_manager.disconnect()
             
             if not response or len(response) < 50:
-                logger.error(f"Réponse trop courte ou vide d'Ollama: '{response}'")
-                return f"# Erreur de génération du résumé\n\nOllama n'a pas réussi à générer un résumé de qualité. Réponse reçue: {response}"
+                logger.error(f"Réponse trop courte ou vide: '{response}'")
+                return f"# Erreur de génération du résumé\n\nAucune réponse de qualité générée. Réponse reçue: {response}"
                 
             header = f"# Veille IA: Résumé hebdomadaire du {date_range}\n\n"
             return header + response
@@ -289,14 +317,7 @@ def main():
     Fonction principale pour générer le résumé hebdomadaire.
     """
     try:
-        # Vérifier si un token d'API Hugging Face est fourni
-        api_token = os.environ.get("HF_API_TOKEN")
-        if api_token:
-            login(token=api_token)
-            logger.info("Authentification à Hugging Face réussie")
-        else:
-            logger.warning("Aucun token Hugging Face trouvé dans HF_API_TOKEN. Utilisation en mode invité.")
-        
+        dotenv.load_dotenv()
         # Initialiser le digest hebdomadaire
         digest = WeeklyDigest()
         
@@ -308,7 +329,6 @@ def main():
         
         logger.info(f"Génération du résumé hebdomadaire terminée. Fichier: {output_path}")
         print(f"Résumé hebdomadaire généré avec succès: {output_path}")
-        
     except Exception as e:
         logger.error(f"Erreur dans le programme principal: {str(e)}")
         print(f"Erreur: {str(e)}")

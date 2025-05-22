@@ -7,12 +7,12 @@
 ![Dépendances](https://img.shields.io/librariesio/release/pypi/requests)
 ![Stars](https://img.shields.io/github/stars/arnaudstdr/resume_news?style=social)
 
-Pipeline complet pour la **veille stratégique sur l’actualité de l’IA** : scraping RSS, normalisation, stockage, génération automatique d’un résumé hebdomadaire structuré et pertinent.
+Pipeline complet pour la **veille stratégique sur l’actualité de l’IA** : scraping RSS, normalisation (résumés courts avec le modèle local `sshleifer/distilbart-cnn-12-6` via Transformers), stockage, génération automatique d’un résumé hebdomadaire structuré et pertinent (avec l’API Mistral Large).
 
 ## ✨ Fonctionnalités
 - 🔎 Scraping de flux RSS IA
-- 🧹 Normalisation et stockage en base SQLite
-- 🗃️ Génération automatique d’un résumé stratégique hebdomadaire (Markdown)
+- 🧹 Normalisation et stockage en base SQLite (résumés courts générés localement avec `sshleifer/distilbart-cnn-12-6`)
+- 🗃️ Génération automatique d’un résumé stratégique hebdomadaire (Markdown, via l’API Mistral Large)
 - 🚀 Expérience utilisateur fluide (un seul script à lancer)
 - 🐳 Dockerisation complète
 - 📜 Documentation claire et logs détaillés
@@ -43,6 +43,16 @@ docker run --rm -it -v $(pwd)/outputs:/app/outputs resume_news
 
 Le résumé généré s’ouvre dans VS Code (si disponible) ou s’affiche dans le terminal.
 
+### 4. Configuration de l'API Mistral
+
+Avant de lancer le pipeline, créez un fichier `.env` à la racine du projet et ajoutez votre clé API Mistral :
+
+```env
+MISTRAL_API_KEY="votre_clé_api_mistral"
+```
+
+La clé est nécessaire pour générer le résumé hebdomadaire avec Mistral Large.
+
 ## 🐳 Utilisation avec Dev Container
 
 Ce projet est prêt pour [Dev Containers](https://containers.dev/) de VS Code.
@@ -65,8 +75,8 @@ Vous pouvez lancer le pipeline, éditer le code, exécuter les tests, etc. dans 
 | `Dockerfile`           | Image Docker du projet                        |
 
 ## 🔌 Endpoints & Résultats
-- Résumé hebdomadaire généré dans `outputs/digest_hebdo_<date>.md`
-- Articles normalisés dans `outputs/normalized/normalized_articles.json`
+- Résumé hebdomadaire généré dans `outputs/digest_hebdo_<date>.md` (via l’API Mistral Large)
+- Articles normalisés dans `outputs/normalized/normalized_articles.json` (résumés courts avec `sshleifer/distilbart-cnn-12-6`)
 
 ## 🧪 Tests
 
