@@ -30,7 +30,17 @@ cd resume_news
 docker build -t resume_news .
 ```
 
-### 3. Lancement du pipeline
+### 3. Configuration de l'API Mistral
+
+Avant de lancer le pipeline, créez un fichier `.env` à la racine du projet et ajoutez votre clé API Mistral :
+
+```env
+MISTRAL_API_KEY="votre_clé_api_mistral"
+```
+
+La clé est nécessaire pour générer le résumé hebdomadaire avec Mistral Large.
+
+### 4. Lancement du pipeline
 ```bash
 docker run --rm -it resume_news
 ```
@@ -43,15 +53,6 @@ docker run --rm -it -v $(pwd)/outputs:/app/outputs resume_news
 
 Le résumé généré s’ouvre dans VS Code (si disponible) ou s’affiche dans le terminal.
 
-### 4. Configuration de l'API Mistral
-
-Avant de lancer le pipeline, créez un fichier `.env` à la racine du projet et ajoutez votre clé API Mistral :
-
-```env
-MISTRAL_API_KEY="votre_clé_api_mistral"
-```
-
-La clé est nécessaire pour générer le résumé hebdomadaire avec Mistral Large.
 
 ## 🐳 Utilisation avec Dev Container
 
