@@ -1,14 +1,47 @@
 # 🤖 Pipeline de Veille IA
 
-
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![Dockerfile](https://img.shields.io/badge/Dockerfile-available-blue?logo=docker)
+![Jetson](https://img.shields.io/badge/Jetson-supported-green?logo=nvidia)
+![NVIDIA GPU](https://img.shields.io/badge/NVIDIA-GPU-green?logo=nvidia)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Dernier commit](https://img.shields.io/github/last-commit/arnaudstdr/resume_news)
 ![Dépendances](https://img.shields.io/librariesio/release/pypi/requests)
 ![Stars](https://img.shields.io/github/stars/arnaudstdr/resume_news?style=social)
 
 Pipeline complet pour la **veille stratégique sur l’actualité de l’IA** : scraping RSS, normalisation (résumés courts avec le modèle local `sshleifer/distilbart-cnn-12-6` via Transformers), stockage, génération automatique d’un résumé hebdomadaire structuré et pertinent (avec l’API Mistral Large).
+
+
+## 🦾 Optimisé pour Jetson Orin Nano & NVIDIA Jetson**
+
+Ce projet est prêt à l’emploi sur les plateformes NVIDIA Jetson (Orin Nano, Xavier, etc.) :
+- Le Dev Container utilise une image Docker compatible Jetson avec support GPU (CUDA/cuDNN préinstallés).
+- Aucun réglage manuel des drivers ou de PyTorch n’est nécessaire.
+- **Recommandé :** ouvrez le dossier dans VS Code et utilisez la fonction “Reopen in Container” pour un environnement prêt à l’emploi, même sur Jetson !
+- Pour les utilisateurs avancés, le pipeline reste compatible avec tout environnement Linux disposant de Docker et d’un GPU NVIDIA.
+
+
+## 💻 Utilisation sur PC classique (Linux, Windows, Mac)**
+
+Le projet fonctionne aussi sur n’importe quel ordinateur avec Docker :
+- Compatible Linux, Windows, Mac (x86_64 ou ARM)
+- GPU NVIDIA recommandé pour de meilleures performances, mais le pipeline fonctionne aussi sur CPU (plus lent)
+- Installez [Docker Desktop](https://www.docker.com/products/docker-desktop/) et [VS Code](https://code.visualstudio.com/) avec l’extension “Dev Containers”
+- Ouvrez le dossier dans VS Code et cliquez sur “Reopen in Container” pour un environnement prêt à l’emploi
+- Toutes les instructions du README s’appliquent également à ces plateformes
+
+
+## ❗️Note importante pour les utilisateurs non-Jetson**
+
+L’image Docker par défaut (`dustynv/l4t-ml:r36.2.0`) est réservée aux plateformes NVIDIA Jetson (ARM64). Sur PC classique (Linux, Windows, Mac), cette image ne fonctionnera pas.
+
+➡️ Pour utiliser le projet sur un ordinateur standard :
+- Modifiez le fichier `.devcontainer/devcontainer.json` pour utiliser une image Docker compatible x86_64, par exemple :
+  ```json
+  "image": "python:3.10"
+  ```
+- Installez manuellement les dépendances nécessaires (PyTorch, Transformers, etc.) dans le Dockerfile ou via `requirements.txt`.
+- Le reste du pipeline et des instructions reste identique.
 
 ## ✨ Fonctionnalités
 - 🔎 Scraping de flux RSS IA
