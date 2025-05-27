@@ -1,5 +1,5 @@
 # Dockerfile pour pipeline de veille IA
-FROM python:3.10-slim
+FROM dustynv/l4t-ml:r36.2.0
 
 # Définir le répertoire de travail
 WORKDIR /app
@@ -7,8 +7,8 @@ WORKDIR /app
 # Copier le code source et les scripts
 COPY . /app
 
-# Installer les dépendances Python
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache \
+    pip install --no-cache-dir -r requirements.txt
 
 # Donner les droits d'exécution au script de démarrage
 RUN chmod +x /app/start.sh
