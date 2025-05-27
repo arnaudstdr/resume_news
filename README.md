@@ -12,7 +12,7 @@
 Pipeline complet pour la **veille stratégique sur l’actualité de l’IA** : scraping RSS, normalisation (résumés courts avec le modèle local `sshleifer/distilbart-cnn-12-6` via Transformers), stockage, génération automatique d’un résumé hebdomadaire structuré et pertinent (avec l’API Mistral Large).
 
 
-## 🦾 Optimisé pour Jetson Orin Nano & NVIDIA Jetson**
+## 🦾 Optimisé pour Jetson Orin Nano & NVIDIA Jetson
 
 Ce projet est prêt à l’emploi sur les plateformes NVIDIA Jetson (Orin Nano, Xavier, etc.) :
 - Le Dev Container utilise une image Docker compatible Jetson avec support GPU (CUDA/cuDNN préinstallés).
@@ -21,7 +21,7 @@ Ce projet est prêt à l’emploi sur les plateformes NVIDIA Jetson (Orin Nano, 
 - Pour les utilisateurs avancés, le pipeline reste compatible avec tout environnement Linux disposant de Docker et d’un GPU NVIDIA.
 
 
-## 💻 Utilisation sur PC classique (Linux, Windows, Mac)**
+## 💻 Utilisation sur PC classique (Linux, Windows, Mac)
 
 Le projet fonctionne aussi sur n’importe quel ordinateur avec Docker :
 - Compatible Linux, Windows, Mac (x86_64 ou ARM)
@@ -31,7 +31,7 @@ Le projet fonctionne aussi sur n’importe quel ordinateur avec Docker :
 - Toutes les instructions du README s’appliquent également à ces plateformes
 
 
-## ❗️Note importante pour les utilisateurs non-Jetson**
+## ❗️Note importante pour les utilisateurs non-Jetson
 
 L’image Docker par défaut (`dustynv/l4t-ml:r36.2.0`) est réservée aux plateformes NVIDIA Jetson (ARM64). Sur PC classique (Linux, Windows, Mac), cette image ne fonctionnera pas.
 
