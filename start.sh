@@ -16,10 +16,19 @@ cd "$BASE_DIR/scripts"
 echo "[INFO] Exécution du pipeline de veille IA..."
 python3 run_all.py
 
-# Chemin du résumé généré (à adapter si besoin)
-DIGEST_FILE="$BASE_DIR/outputs/digest_hebdo_20250521.md"
+# Générer le rapport HTML statique
+cd "$BASE_DIR/web_viewer"
+echo "[INFO] Génération du rapport HTML statique..."
+python3 generate_static.py
+cd "$BASE_DIR/scripts"
 
-if [ -f "$DIGEST_FILE" ]; then
+# Trouver dynamiquement le dernier fichier digest_hebdo_*.md généré
+DIGEST_FILE=$(ls -t "$BASE_DIR/outputs/digest_hebdo_"*.md 2>/dev/null | head -n 1)
+
+# Chemin du rapport HTML généré
+HTML_REPORT="$BASE_DIR/outputs/veille_ia_rapport.html"
+
+if [ -n "$DIGEST_FILE" ] && [ -f "$DIGEST_FILE" ]; then
     echo "[INFO] Résumé généré : $DIGEST_FILE"
     # Vérifier si la commande 'code' (VS Code CLI) est disponible
     if command -v code >/dev/null 2>&1; then
@@ -32,6 +41,22 @@ if [ -f "$DIGEST_FILE" ]; then
         echo "-----------------------------"
     fi
 else
-    echo "[ERREUR] Le fichier de résumé n'a pas été trouvé : $DIGEST_FILE"
+    echo "[ERREUR] Aucun fichier de résumé trouvé dans $BASE_DIR/outputs/ (digest_hebdo_*.md)"
     exit 1
+fi
+
+# Ouvrir automatiquement le rapport HTML dans le navigateur
+if [ -f "$HTML_REPORT" ]; then
+    echo "[INFO] Ouverture du rapport HTML dans le navigateur..."
+    if [ -n "$BROWSER" ]; then
+        "$BROWSER" "$HTML_REPORT"
+    elif command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "$HTML_REPORT"
+    elif command -v open >/dev/null 2>&1; then # Pour macOS
+        open "$HTML_REPORT"
+    else
+        echo "[WARN] Impossible d'ouvrir automatiquement le navigateur. Ouvrez manuellement : $HTML_REPORT"
+    fi
+else
+    echo "[ERREUR] Le rapport HTML n'a pas été trouvé : $HTML_REPORT"
 fi
