@@ -292,23 +292,18 @@ Rédige un **rapport de veille approfondi en français** en suivant cette struct
         
         Args:
             digest: Contenu du résumé
-            output_dir: Répertoire de sortie (par défaut: dossier outputs)
+            output_dir: Répertoire de sortie (par défaut: outputs/normalized/digest_hebdo)
             
         Returns:
             Chemin du fichier de sortie
         """
         if output_dir is None:
-            output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "outputs")
-        
+            output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "outputs", "normalized", "digest_hebdo")
         os.makedirs(output_dir, exist_ok=True)
-        
-        # Créer un nom de fichier basé sur la date
         filename = f"digest_hebdo_{datetime.now().strftime('%Y%m%d')}.md"
         output_path = os.path.join(output_dir, filename)
-        
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(digest)
-            
         logger.info(f"Résumé hebdomadaire sauvegardé dans {output_path}")
         return output_path
 
@@ -317,13 +312,13 @@ Rédige un **rapport de veille approfondi en français** en suivant cette struct
         Génère un fichier markdown listant tous les articles scrappés de la semaine avec toutes les infos (titre, contenu, lien, etc.).
         Args:
             days: Nombre de jours à considérer
-            output_dir: Répertoire de sortie (défaut: outputs)
+            output_dir: Répertoire de sortie (défaut: outputs/normalized/articles_complets)
             limit: Nombre max d'articles (None = pas de limite raisonnable)
         Returns:
             Chemin du fichier markdown généré
         """
         if output_dir is None:
-            output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "outputs")
+            output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "outputs", "normalized", "articles_complets")
         os.makedirs(output_dir, exist_ok=True)
         articles = self.db_manager.get_recent_articles(limit=1000 if limit is None else limit, days=days)
         if not articles:
