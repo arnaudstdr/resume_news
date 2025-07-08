@@ -18,3 +18,7 @@ outputs/normalized/
 # Fichiers de configuration locaux (à adapter si besoin)
 .env
 screenshots/
+
+
+# Devcontainer Jetson temporaire (empêche les push accidentels)
+!.devcontainer/devcontainer.json
