@@ -72,27 +72,6 @@ Ce projet est prêt pour [Dev Containers](https://containers.dev/) de VS Code.
 
 Vous pouvez lancer le pipeline, éditer le code, exécuter les tests, etc. dans un environnement isolé.
 
-### ⚡ Support Jetson Orin Nano (GPU NVIDIA)
-
-> Ce projet propose **deux configurations DevContainer** :
-> 
-> - `devcontainer.json` (par défaut) : configuration universelle, compatible PC, Mac, Raspberry Pi, cloud, etc. — CPU uniquement.
-> - `devcontainer-jetson.json` : configuration optimisée pour Jetson Orin Nano, avec accélération GPU (CUDA, cuDNN).
->
-> **Comment activer le support Jetson GPU ?**
->
-> 1. Sur le Jetson, lancez le script :
->     ```bash
->     ./switch-devcontainer.sh jetson
->     ```
->     Cela écrase temporairement `.devcontainer/devcontainer.json` avec la version GPU.
-> 2. Ouvrez VSCode en Remote SSH sur le Jetson, puis "Reopen in Container".
-> 3. Après utilisation, repassez en mode universel (pour commit/push) :
->     ```bash
->     ./switch-devcontainer.sh cpu
->     ```
-> 4. **Important :** ne commitez jamais la version Jetson du fichier `.devcontainer/devcontainer.json` (gardez toujours la version universelle sur le dépôt).
-
 
 ## 🔌 Structure des dossiers
 | Dossier/Fichier         | Rôle principal                                 |
