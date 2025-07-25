@@ -71,7 +71,9 @@ class StaticHTMLGenerator:
     def get_latest_digest(self):
         """Récupère le dernier résumé."""
         try:
-            digest_files = list(self.outputs_dir.glob("digest_hebdo_*.md"))
+            # Chercher dans le bon répertoire
+            digest_dir = self.outputs_dir / "normalized" / "digest_hebdo"
+            digest_files = list(digest_dir.glob("digest_hebdo_*.md"))
             if not digest_files:
                 return None
             
