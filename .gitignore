@@ -20,3 +20,5 @@ venv_gpu/
 screenshots/
 requirements.txt.old
 .env
+
+config/email_config.ini

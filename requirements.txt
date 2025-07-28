@@ -4,3 +4,5 @@ Markdown==3.8.2
 python-dotenv==1.1.1
 Requests==2.32.4
 transformers==4.40.2
+weasyprint>=60.0
+configparser

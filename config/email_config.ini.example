@@ -1,0 +1,22 @@
+[EMAIL]
+# Configuration SMTP (exemple avec Gmail)
+smtp_server = smtp.gmail.com
+smtp_port = 587
+email_user = your_mail@gmail.com
+email_password = app_password
+recipient_email = 
+
+# Options d'envoi
+send_html = true
+send_pdf = true
+subject_prefix = [Veille IA]
+
+# Options PDF
+pdf_format = A4
+pdf_margin = 2cm
+
+[ADVANCED]
+# Paramètres avancés (optionnels)
+use_tls = true
+timeout = 30
+max_attachment_size_mb = 25

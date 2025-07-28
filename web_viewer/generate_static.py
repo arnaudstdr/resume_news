@@ -21,6 +21,14 @@ except ImportError:
     print("⚠️  Module db_manager non trouvé. Utilisation des fichiers JSON.")
     DatabaseManager = None
 
+try:
+    from send_mail import EmailSender
+    EMAIL_AVAILABLE = True
+except ImportError:
+    print("⚠️  Module send_mail non trouvé. Fonctionnalité email désactivée.")
+    EmailSender = None
+    EMAIL_AVAILABLE = False
+
 class StaticHTMLGenerator:
     """Générateur de page HTML statique pour la veille IA."""
     
@@ -29,7 +37,7 @@ class StaticHTMLGenerator:
         self.outputs_dir = self.base_dir / "outputs"
         self.data_dir = self.base_dir / "data"
         self.db_path = self.data_dir / "rss_articles.db"
-        
+
     def get_articles(self):
         """Récupère tous les articles."""
         if DatabaseManager and self.db_path.exists():
@@ -461,16 +469,154 @@ class StaticHTMLGenerator:
         
         print(f"✅ Rapport HTML généré : {output_path}")
         return output_path
+    
+    def generate_and_send_report(self, save_local=True, send_email=True, generate_pdf=True, email_subject=None):
+        """
+        Génère le rapport complet et l'envoie par email.
+        
+        Args:
+            save_local: Sauvegarder le fichier HTML localement
+            send_email: Envoyer le rapport par email
+            generate_pdf: Générer et attacher un PDF
+            email_subject: Sujet personnalisé pour l'email
+            
+        Returns:
+            dict: Résultats de l'opération
+        """
+        results = {
+            'html_path': None,
+            'pdf_path': None,
+            'email_sent': False,
+            'errors': []
+        }
+        
+        print("🔄 Génération du rapport de veille...")
+        
+        # Génération du contenu HTML
+        html_content = self.generate_html()
+        
+        # Sauvegarde locale
+        if save_local:
+            try:
+                html_path = self.save_html()
+                results['html_path'] = html_path
+            except Exception as e:
+                error_msg = f"Erreur sauvegarde locale : {e}"
+                print(f"❌ {error_msg}")
+                results['errors'].append(error_msg)
+        
+        # Envoi par email
+        if send_email and EMAIL_AVAILABLE and EmailSender:
+            try:
+                email_sender = EmailSender()
+                email_results = email_sender.send_report(
+                    html_content,
+                    generate_pdf=generate_pdf,
+                    custom_subject=email_subject
+                )
+                
+                results['email_sent'] = email_results['email_sent']
+                results['pdf_path'] = email_results['pdf_path']
+                
+                if email_results['errors']:
+                    results['errors'].extend(email_results['errors'])
+                
+                if email_results['email_sent']:
+                    print("📧 Rapport envoyé par email avec succès !")
+                    if email_results['pdf_generated']:
+                        print(f"📎 PDF joint : {email_results['pdf_path'].name}")
+                else:
+                    print("❌ Échec de l'envoi par email")
+                    
+            except Exception as e:
+                error_msg = f"Erreur envoi email : {e}"
+                print(f"❌ {error_msg}")
+                results['errors'].append(error_msg)
+        
+        elif send_email and not EMAIL_AVAILABLE:
+            error_msg = "Module d'envoi d'email non disponible"
+            print(f"⚠️  {error_msg}")
+            results['errors'].append(error_msg)
+        
+        return results
 
 def main():
     """Fonction principale."""
-    print("🔄 Génération du rapport HTML statique...")
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Générateur de rapport de veille IA')
+    parser.add_argument('--no-email', action='store_true', 
+                       help='Ne pas envoyer par email')
+    parser.add_argument('--no-local', action='store_true', 
+                       help='Ne pas sauvegarder localement')
+    parser.add_argument('--email-only', action='store_true', 
+                       help='Envoyer seulement par email (sans sauvegarde locale)')
+    parser.add_argument('--no-pdf', action='store_true', 
+                       help='Ne pas générer de PDF pour l\'email')
+    parser.add_argument('--subject', type=str, 
+                       help='Sujet personnalisé pour l\'email')
+    parser.add_argument('--test-email', action='store_true', 
+                       help='Tester la configuration email')
+    
+    args = parser.parse_args()
     
     generator = StaticHTMLGenerator()
-    output_path = generator.save_html()
     
-    print(f"📄 Rapport accessible à : file://{output_path.absolute()}")
-    print("💡 Vous pouvez ouvrir ce fichier dans votre navigateur pour consulter le rapport hors ligne.")
+    # Test de la configuration email
+    if args.test_email:
+        if EMAIL_AVAILABLE and EmailSender:
+            email_sender = EmailSender()
+            success = email_sender.test_configuration()
+            if success:
+                print("✅ Configuration email valide")
+            else:
+                print("❌ Configuration email invalide")
+        else:
+            print("❌ Module d'envoi d'email non disponible")
+        return
+    
+    # Génération du rapport
+    if args.email_only:
+        result = generator.generate_and_send_report(
+            save_local=False, 
+            send_email=True,
+            generate_pdf=not args.no_pdf,
+            email_subject=args.subject
+        )
+    else:
+        result = generator.generate_and_send_report(
+            save_local=not args.no_local,
+            send_email=not args.no_email,
+            generate_pdf=not args.no_pdf,
+            email_subject=args.subject
+        )
+    
+    # Affichage des résultats
+    print("\n📋 Résumé de l'opération :")
+    if result['html_path']:
+        print(f"📄 HTML sauvegardé : {result['html_path']}")
+        print(f"🌐 Accessible via : file://{result['html_path'].absolute()}")
+    
+    if result['pdf_path']:
+        print(f"� PDF généré : {result['pdf_path']}")
+    
+    if result['email_sent']:
+        print("📧 Email envoyé avec succès !")
+    elif not args.no_email and not args.email_only:
+        print("📧 Email non envoyé")
+    
+    if result['errors']:
+        print("\n⚠️  Erreurs rencontrées :")
+        for error in result['errors']:
+            print(f"   • {error}")
+    
+    # Conseils d'utilisation
+    if not args.email_only and not args.no_local:
+        print("\n💡 Conseils d'utilisation :")
+        print("   • Configurez config/email_config.ini pour l'envoi automatique")
+        print("   • Utilisez --email-only pour un envoi rapide sans sauvegarde")
+        print("   • Utilisez --test-email pour vérifier votre configuration")
+        print("   • Le PDF est optimisé pour l'impression")
 
 if __name__ == '__main__':
     main()
