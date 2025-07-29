@@ -125,6 +125,7 @@ class WeeklyDigest:
                 
         return "\n".join(content_list)
     
+    
     def ollama_generate(self, prompt: str, model: str = "mistral", max_tokens: int = 3500) -> str:
         """
         Utilise l'API locale d'Ollama pour générer du texte avec le modèle spécifié.
@@ -146,7 +147,7 @@ class WeeklyDigest:
         except Exception as e:
             logger.error(f"Erreur lors de la génération avec Ollama : {str(e)}")
             return f"Erreur lors de la génération avec Ollama : {str(e)}"
-
+    
     def mistral_generate(self, prompt: str, max_tokens: int = 3500) -> str:
         """
         Utilise l'API HTTP de Mistral Large pour générer du texte avec la clé API stockée dans .env.
@@ -215,50 +216,26 @@ class WeeklyDigest:
             date_range = f"{start_date.strftime('%d/%m/%Y')} au {end_date.strftime('%d/%m/%Y')}"
             
             # Créer le prompt pour Mistral (en français)
-            prompt = f"""Tu es un expert en intelligence artificielle chargé de produire une **veille stratégique, synthétique et à forte valeur ajoutée** sur les dernières actualités en IA.
+            prompt = f"""Tu es un expert en intelligence artificielle chargé de rédiger un résumé hebdomadaire clair et exhaustif sur les actualités récentes en IA.
 
-Voici une compilation d'articles publiés du {date_range} sur l'intelligence artificielle :
+Voici les articles publiés du {date_range} sur l’intelligence artificielle :
 
 {content}
 
-Rédige un **rapport de veille approfondi en français** en suivant cette structure précise :
+Rédige un résumé approfondi et stratégique en français, en suivant cette structure simple :
 
-1. **Résumé exécutif** (300-400 mots)
-   - Synthèse des tendances, signaux faibles, ruptures, innovations et signaux d’alerte de la semaine
-   - Ce qui est vraiment nouveau, impactant ou susceptible de changer la donne dans l’écosystème IA
-   - Mise en perspective des faits marquants
+🗞️ Synthèse hebdomadaire
+	•	Un résumé détaillé de 400-500 mots des principales actualités et tendances importantes de la semaine.
+	•	Mentionne clairement ce qui est particulièrement impactant, innovant ou stratégique dans le domaine de l’IA.
 
-2. **Chiffres clés de la semaine**
-   - Montants d'investissements, dates importantes, annonces majeures, etc. (si pertinent)
+📌 Lectures complémentaires
+	•	Une liste simple avec les liens directs vers les articles les plus pertinents pour approfondir.
 
-3. **Avancées technologiques clés**
-   - Innovations techniques, publications scientifiques, nouveaux modèles ou architectures d'IA
-   - Focus sur les percées ou tendances émergentes
-
-4. **Initiatives industrielles**
-   - Annonces, partenariats, investissements, acquisitions majeures
-   - Ce qui peut transformer le marché ou la compétition
-
-5. **Enjeux sociétaux et réglementaires**
-   - Développements réglementaires, débats éthiques, signaux d’alerte sociétaux
-   - Impacts potentiels sur la société, l’économie ou la gouvernance
-
-6. **Projets open-source et communauté**
-   - Nouvelles librairies, outils, contributions communautaires, événements
-   - Ce qui fait avancer l’écosystème open-source IA
-
-7. **Sélection de lectures complémentaires**
-   - Liste organisée des articles les plus importants ou pertinents
-   - Classement par thématique
-   - Inclure tous les liens pertinents
-
-**Directives importantes :**
-- Priorise l’analyse, la mise en perspective et la sélection des informations les plus stratégiques.
-- Ne cherche pas à tout lister, mais à faire ressortir ce qui compte vraiment pour rester à la pointe de l’innovation IA.
-- Format : Markdown bien structuré avec titres et sous-titres
-- Style : Professionnel, factuel, synthétique et objectif
-- Langue : Français uniquement, style clair et précis
-- Si possible, termine chaque section par une phrase de mise en perspective ou d’alerte.
+Directives :
+	•	Priorise la clarté, la pertinence et l’exhaustivité.
+	•	Style : professionnel, synthétique, facile à lire rapidement.
+	•	Format : Markdown structuré avec titres et listes à puces.
+	•	Langue : Français clair et accessible.
 """
             
             logger.info(f"Génération du résumé hebdomadaire avec Mistral Large...")

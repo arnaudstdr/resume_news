@@ -22,3 +22,5 @@ requirements.txt.old
 .env
 
 config/email_config.ini
+
+prompt_v1.txt
