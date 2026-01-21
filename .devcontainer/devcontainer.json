@@ -1,20 +1,54 @@
 {
-  "name": "resume_ai",
-  "image": "mcr.microsoft.com/devcontainers/python:3.10-bullseye",
-  "runArgs": ["--name", "resume_ai"],
-  "postCreateCommand": "pip install -r requirements.txt",
+  "name": "${localWorkspaceFolderBasename} - DevContainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "vscode",
+
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+
+  "runArgs": [
+    "--name=${localWorkspaceFolderBasename}-devcontainer"
+  ],
+
   "customizations": {
     "vscode": {
       "extensions": [
+        "codeium.codeium",
+        "gruntfuggly.todo-tree",
+        "mechatroner.rainbow-csv",
+        "mhutchie.git-graph",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+        "ms-python.debugpy",
         "ms-python.python",
-        "ms-toolsai.jupyter",
-        "ms-azuretools.vscode-docker"
-      ]
+        "ms-python.vscode-pylance",
+        "ms-python.vscode-python-envs",
+        "postman.postman-for-vscode",
+        "redhat.vscode-yaml",
+        "s3anmorrow.color-stamp",
+        "shardulm94.trailing-spaces",
+        "wakatime.vscode-wakatime"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.analysis.typeCheckingMode": "basic",
+        "editor.formatOnSave": true,
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
     }
   },
-  "features": {},
-  "forwardPorts": [8888],
 
-  // Container user
-  "remoteUser": "vscode"
+  "containerEnv": {
+    "SHELL": "/bin/bash"
+  },
+
+  "postCreateCommand": "python --version && node --version && bash --version && docker --version && docker compose version",
+
+  "postStartCommand": "sudo chmod 666 /var/run/docker.sock"
 }

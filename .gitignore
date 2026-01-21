@@ -23,4 +23,4 @@ requirements.txt.old
 
 config/email_config.ini
 
-prompt_v1.txt
+.DS_store

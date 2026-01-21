@@ -1,5 +1,9 @@
 [
     {
+        "name": "OpenAI",
+        "url": "https://openai.com/news/rss.xml"
+    },
+    {
         "name": "Hugging Face Blog",
         "url": "https://huggingface.co/blog/feed.xml"
     },
@@ -8,15 +12,19 @@
         "url": "https://research.google/blog/rss/"
     },
     {
-        "name": "MIT AI News",
-        "url": "http://news.mit.edu/rss/topic/artificial-intelligence2"
-    },
-    {
         "name": "KDnuggets",
         "url": "http://feeds.feedburner.com/kdnuggets-data-mining-analytics"
     },
     {
-        "name": "ActuIA",
-        "url": "https://www.actuia.com/feed/"
+        "name": "Sebastian Raschka, PhD",
+        "url": "http://sebastianraschka.com/rss_feed.xml"
+    },
+    {
+        "name": "MLOps Community",
+        "url": "https://mlops.community/feed/"
+    },
+    {
+        "name": "AI & Machine Learning",
+        "url": "https://cloudblog.withgoogle.com/products/ai-machine-learning/rss/"
     }
-] 
+]
