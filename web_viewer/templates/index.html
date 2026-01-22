@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Veille IA - Console</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f4ef;
+        --panel: #ffffff;
+        --ink: #1f2937;
+        --muted: #6b7280;
+        --accent: #0f766e;
+        --accent-2: #0f172a;
+        --border: #e5e7eb;
+        --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top right, #e6f0ee, transparent 55%),
+          radial-gradient(circle at bottom left, #f6efe5, transparent 55%), var(--bg);
+        color: var(--ink);
+      }
+
+      header {
+        padding: 2.5rem 1.5rem 1.5rem;
+        text-align: center;
+      }
+
+      header h1 {
+        margin: 0 0 0.5rem;
+        font-size: 2.1rem;
+        letter-spacing: 0.02em;
+      }
+
+      header p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 0 1.5rem 3rem;
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .panel {
+        background: var(--panel);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .button {
+        border: none;
+        padding: 0.75rem 1.4rem;
+        border-radius: 999px;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .button-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .button-secondary {
+        background: #eef2f5;
+        color: var(--accent-2);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .status-grid {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        margin-top: 1rem;
+      }
+
+      .status-card {
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #fafafa;
+      }
+
+      .status-card span {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.35rem;
+      }
+
+      .status-card strong {
+        font-size: 1rem;
+      }
+
+      .message {
+        margin-top: 0.75rem;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        background: #f0f9f8;
+        border: 1px solid #cce7e4;
+        color: #0f3f3a;
+      }
+
+      pre {
+        margin: 0;
+        background: #0f172a;
+        color: #f8fafc;
+        padding: 1rem;
+        border-radius: 12px;
+        overflow-x: auto;
+        font-size: 0.85rem;
+        line-height: 1.4;
+      }
+
+      footer {
+        text-align: center;
+        padding-bottom: 2rem;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Veille IA</h1>
+      <p>Console locale pour lancer le pipeline et consulter le rapport HTML.</p>
+    </header>
+    <main>
+      <section class="panel">
+        <h2>Actions</h2>
+        <div class="actions">
+          <form method="post" action="{{ url_for('run_pipeline') }}">
+            <button class="button button-primary" type="submit" {% if state.running %}disabled{% endif %}>
+              {% if state.running %}Pipeline en cours...{% else %}Lancer le pipeline{% endif %}
+            </button>
+          </form>
+          <a class="button button-secondary" href="{{ url_for('report') }}">
+            Ouvrir le rapport HTML
+          </a>
+        </div>
+        {% if message %}
+        <div class="message">{{ message }}</div>
+        {% endif %}
+        <div class="status-grid">
+          <div class="status-card">
+            <span>Statut</span>
+            <strong>{% if state.running %}En cours{% else %}Au repos{% endif %}</strong>
+          </div>
+          <div class="status-card">
+            <span>Dernier lancement</span>
+            <strong>{{ state.last_start or "Jamais" }}</strong>
+          </div>
+          <div class="status-card">
+            <span>Derniere fin</span>
+            <strong>{{ state.last_finish or "N/A" }}</strong>
+          </div>
+          <div class="status-card">
+            <span>Code sortie</span>
+            <strong>{{ state.last_exit_code if state.last_exit_code is not none else "N/A" }}</strong>
+          </div>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Derniers logs</h2>
+        <pre>{{ log_tail | e }}</pre>
+      </section>
+    </main>
+    <footer>
+      Rapport HTML: {% if report_exists %}Disponible{% else %}Non genere{% endif %}
+    </footer>
+  </body>
+</html>

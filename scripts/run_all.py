@@ -68,18 +68,23 @@ def main():
     # 3. Insertion en base
     logger.info("[3/4] Insertion en base de données...")
     try:
+        if not normalized:
+            logger.warning("Aucun article normalisé à insérer en base.")
+            return
         db = DatabaseManager(DB_PATH)
         db.connect()
         db.create_tables()
-        # On suppose que chaque article a un champ 'source' et 'url'
-        for fname in os.listdir(OUTPUTS_DIR):
-            if fname.endswith('.json') and fname != 'normalized_articles.json':
-                with open(os.path.join(OUTPUTS_DIR, fname), 'r', encoding='utf-8') as f:
-                    articles = __import__('json').load(f)
-                    if articles:
-                        source_name = articles[0].get('source', fname.replace('.json',''))
-                        source_url = articles[0].get('url', '')
-                        db.add_articles_batch(articles, source_name, source_url)
+
+        # Regrouper par source pour éviter de mélanger les sources
+        articles_by_source = {}
+        for article in normalized:
+            source_name = article.get("source", "Unknown")
+            articles_by_source.setdefault(source_name, []).append(article)
+
+        for source_name, articles in articles_by_source.items():
+            source_url = articles[0].get("url", "")
+            db.add_articles_batch(articles, source_name, source_url)
+
         db.disconnect()
     except Exception as e:
         logger.error(f"Erreur lors de l'insertion en base : {e}")

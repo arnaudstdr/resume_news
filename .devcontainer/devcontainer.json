@@ -1,5 +1,5 @@
 {
-  "name": "${localWorkspaceFolderBasename} - DevContainer",
+  "name": "${localWorkspaceFolderBasename}",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."
@@ -7,15 +7,12 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "workspaceFolder": "/workspace",
   "remoteUser": "vscode",
-
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
-
   "runArgs": [
     "--name=${localWorkspaceFolderBasename}-devcontainer"
   ],
-
   "customizations": {
     "vscode": {
       "extensions": [
@@ -43,12 +40,9 @@
       }
     }
   },
-
   "containerEnv": {
     "SHELL": "/bin/bash"
   },
-
   "postCreateCommand": "python --version && node --version && bash --version && docker --version && docker compose version",
-
   "postStartCommand": "sudo chmod 666 /var/run/docker.sock"
 }

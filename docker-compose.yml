@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  resume_news_web:
+    build: .
+    container_name: resume_news_web
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./outputs:/app/outputs
+      - ./data:/app/data
+    command: ["bash", "start_web.sh"]
+    restart: unless-stopped

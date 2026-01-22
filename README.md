@@ -95,6 +95,25 @@ Ce projet est prêt pour [Dev Containers](https://containers.dev/) de VS Code.
 
 Vous pouvez lancer le pipeline, éditer le code, exécuter les tests, etc. dans un environnement isolé.
 
+## 🌐 Interface web (Flask)
+
+Une interface web simple est disponible pour lancer le pipeline et ouvrir le rapport HTML.
+
+### Lancement avec Docker
+
+```bash
+./docker-run-web.sh
+```
+
+Puis ouvrir `http://localhost:8000` (ou l'IP du Raspberry Pi) pour accéder au bouton de lancement et au rapport.
+
+### Lancement sans Docker
+
+```bash
+pip install -r requirements.txt
+./start_web.sh
+```
+
 
 ## 🔌 Structure des dossiers
 | Dossier/Fichier         | Rôle principal                                 |
