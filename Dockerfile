@@ -1,17 +1,42 @@
-# Dockerfile pour pipeline de veille IA (compatible devcontainer)
-FROM mcr.microsoft.com/devcontainers/python:3.10-bullseye
+# syntax=docker/dockerfile:1
 
-# Définir le répertoire de travail
+FROM python:3.12-slim
+
+# Variables d'environnement
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Installation des dépendances système nécessaires pour weasyprint et les autres libs
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libffi-dev \
+    shared-mime-info \
+    && rm -rf /var/lib/apt/lists/*
+
+# Création du répertoire de travail
 WORKDIR /app
 
-# Copier le code source et les scripts
-COPY . /app
+# Copie des fichiers de dépendances et installation
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Installer les dépendances Python
-RUN pip install --no-cache-dir -r requirements.txt
+# Copie de l'ensemble du projet
+COPY . .
 
-# Donner les droits d'exécution au script de démarrage
-RUN chmod +x /app/start.sh
+# Création des répertoires nécessaires
+RUN mkdir -p outputs data
 
-# Pas d'ENTRYPOINT : le devcontainer lance un shell interactif par défaut
-# CMD ["/bin/bash"]
+# Le fichier .env doit être monté ou copié lors de l'exécution
+# Vérification que le fichier .env existe avant de lancer le pipeline
+CMD if [ ! -f .env ]; then \
+        echo "❌ Erreur: Le fichier .env est requis."; \
+        echo "📝 Créez un fichier .env avec: MISTRAL_API_KEY=\"votre_clé_api_mistral\""; \
+        exit 1; \
+    fi && \
+    bash start_pipeline.sh

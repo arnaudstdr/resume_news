@@ -1,0 +1,43 @@
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environnement virtuel
+venv/
+env/
+ENV/
+
+# Fichiers sensibles
+.env
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Outputs et data locaux (seront créés dans le container)
+outputs/
+data/
+
+# Dev container
+.devcontainer/
+
+# Documentation
+*.md
+LICENCE
