@@ -32,6 +32,8 @@ COPY . .
 # Création des répertoires nécessaires
 RUN mkdir -p outputs data
 
+EXPOSE 8000
+
 # Le fichier .env doit être monté ou copié lors de l'exécution
 # Vérification que le fichier .env existe avant de lancer le pipeline
 CMD if [ ! -f .env ]; then \
