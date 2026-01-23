@@ -59,6 +59,7 @@
         padding: 1.5rem;
         border: 1px solid var(--border);
         box-shadow: var(--shadow);
+        min-width: 0;
       }
 
       .actions {
@@ -136,6 +137,12 @@
         overflow-x: auto;
         font-size: 0.85rem;
         line-height: 1.4;
+        min-width: 0;
+      }
+
+      .log-window {
+        max-height: 35vh;
+        overflow-y: auto;
       }
 
       footer {
@@ -143,6 +150,17 @@
         padding-bottom: 2rem;
         color: var(--muted);
         font-size: 0.85rem;
+      }
+
+      @media (max-width: 640px) {
+        header {
+          padding: 2rem 1rem 1.25rem;
+        }
+
+        main {
+          max-width: none;
+          padding: 0 1rem 2rem;
+        }
       }
     </style>
   </head>
@@ -188,11 +206,45 @@
       </section>
       <section class="panel">
         <h2>Derniers logs</h2>
-        <pre>{{ log_tail | e }}</pre>
+        <pre class="log-window" id="log-window">{{ log_tail | e }}</pre>
       </section>
     </main>
     <footer>
       Rapport HTML: {% if report_exists %}Disponible{% else %}Non genere{% endif %}
     </footer>
+    <script>
+      const logWindow = document.getElementById("log-window");
+      const STICKY_THRESHOLD = 24;
+
+      if (logWindow) {
+        let autoScrollEnabled = true;
+
+        const isNearBottom = () => {
+          const remaining =
+            logWindow.scrollHeight - logWindow.scrollTop - logWindow.clientHeight;
+          return remaining <= STICKY_THRESHOLD;
+        };
+
+        const scrollToBottom = () => {
+          logWindow.scrollTop = logWindow.scrollHeight;
+        };
+
+        logWindow.addEventListener("scroll", () => {
+          autoScrollEnabled = isNearBottom();
+        });
+
+        if (autoScrollEnabled) {
+          scrollToBottom();
+        }
+
+        const observer = new MutationObserver(() => {
+          if (autoScrollEnabled) {
+            scrollToBottom();
+          }
+        });
+
+        observer.observe(logWindow, { childList: true, subtree: true });
+      }
+    </script>
   </body>
 </html>
