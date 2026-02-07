@@ -24,3 +24,4 @@ requirements.txt.old
 config/email_config.ini
 
 .DS_store
+.vscode/

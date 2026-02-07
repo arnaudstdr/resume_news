@@ -4,6 +4,10 @@
         "url": "https://openai.com/news/rss.xml"
     },
     {
+        "name": "Anthropic",
+        "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml"
+    },
+    {
         "name": "Hugging Face Blog",
         "url": "https://huggingface.co/blog/feed.xml"
     },
@@ -14,10 +18,6 @@
     {
         "name": "KDnuggets",
         "url": "http://feeds.feedburner.com/kdnuggets-data-mining-analytics"
-    },
-    {
-        "name": "Sebastian Raschka, PhD",
-        "url": "http://sebastianraschka.com/rss_feed.xml"
     },
     {
         "name": "MLOps Community",

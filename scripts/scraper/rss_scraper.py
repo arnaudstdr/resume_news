@@ -77,7 +77,7 @@ def fetch_feed_with_retry(url: str, retries: int = MAX_RETRIES) -> Optional[feed
 def scrape_rss_source(name: str, url: str, days_limit: int = DAYS_LIMIT) -> List[Dict]:
     """Scrape un flux RSS avec gestion des erreurs améliorée"""
     logger.info(f"Début du scraping pour: {name} ({url})")
-    
+
     if not validate_url(url):
         logger.error(f"URL invalide pour {name}: {url}")
         return []
@@ -86,7 +86,7 @@ def scrape_rss_source(name: str, url: str, days_limit: int = DAYS_LIMIT) -> List
     if not feed or not feed.entries:
         logger.warning(f"Aucun article trouvé pour {name}")
         return []
-    
+
     results = []
     date_limit = datetime.now() - timedelta(days=days_limit)
     errors_count = 0
@@ -149,10 +149,10 @@ def save_results(source_name: str, articles: List[Dict]) -> None:
         os.makedirs(OUTPUT_DIR, exist_ok=True)
         filename = f"{slugify(source_name)}.json"
         path = os.path.join(OUTPUT_DIR, filename)
-        
+
         with open(path, "w", encoding="utf-8") as f:
             json.dump(articles, f, ensure_ascii=False, indent=2)
-        
+
         logger.info(f"{len(articles)} articles enregistrés dans {path}")
     except Exception as e:
         logger.error(f"Erreur lors de la sauvegarde des résultats pour {source_name}: {str(e)}")
@@ -173,10 +173,10 @@ def run_all() -> None:
     try:
         sources = load_rss_sources(RSS_LIST_PATH)
         logger.info(f"Démarrage du scraping pour {len(sources)} sources")
-        
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             executor.map(process_source, sources)
-            
+
         logger.info("Scraping terminé avec succès")
     except Exception as e:
         logger.error(f"Erreur critique lors de l'exécution: {str(e)}")

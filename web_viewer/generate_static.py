@@ -6,7 +6,6 @@ Crée une page web autonome avec tous les résumés et articles.
 
 import os
 import json
-import sqlite3
 from datetime import datetime
 from pathlib import Path
 import markdown
@@ -31,7 +30,7 @@ except ImportError:
 
 class StaticHTMLGenerator:
     """Générateur de page HTML statique pour la veille IA."""
-    
+
     def __init__(self):
         self.base_dir = Path(__file__).parent.parent
         self.outputs_dir = self.base_dir / "outputs"
@@ -49,33 +48,33 @@ class StaticHTMLGenerator:
                 return articles
             except Exception as e:
                 print(f"Erreur base de données : {e}")
-        
+
         # Fallback : fichiers JSON
         return self._get_articles_from_json()
-    
+
     def _get_articles_from_json(self):
         """Récupère les articles depuis les fichiers JSON."""
         articles = []
-        
+
         for json_file in self.outputs_dir.glob("*.json"):
             if json_file.name == "normalized_articles.json":
                 continue
-                
+
             try:
                 with open(json_file, 'r', encoding='utf-8') as f:
                     file_articles = json.load(f)
                     source_name = json_file.stem.replace('-', ' ').title()
-                    
+
                     for article in file_articles:
                         article['source_name'] = source_name
                         articles.append(article)
             except Exception as e:
                 print(f"Erreur lecture {json_file} : {e}")
-        
+
         # Tri par date
         articles.sort(key=lambda x: x.get('date', ''), reverse=True)
         return articles
-    
+
     def get_latest_digest(self):
         """Récupère le dernier résumé."""
         try:
@@ -84,12 +83,12 @@ class StaticHTMLGenerator:
             digest_files = list(digest_dir.glob("digest_hebdo_*.md"))
             if not digest_files:
                 return None
-            
+
             latest_digest = max(digest_files, key=lambda f: f.stat().st_mtime)
-            
+
             with open(latest_digest, 'r', encoding='utf-8') as f:
                 content = f.read()
-            
+
             return {
                 'filename': latest_digest.name,
                 'content': content,
@@ -99,16 +98,16 @@ class StaticHTMLGenerator:
         except Exception as e:
             print(f"Erreur lecture résumé : {e}")
             return None
-    
+
     def generate_html(self):
         """Génère la page HTML complète."""
         articles = self.get_articles()
         digest = self.get_latest_digest()
-        
+
         # Statistiques
         sources = list(set(a.get('source_name', a.get('source', 'Unknown')) for a in articles))
         total_articles = len(articles)
-        
+
         html_template = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -353,7 +352,7 @@ class StaticHTMLGenerator:
                 background: white;
                 color: black;
             }}
-            
+
             .section {{
                 break-inside: avoid;
             }}
@@ -422,20 +421,20 @@ class StaticHTMLGenerator:
 </html>"""
 
         return html_template
-    
+
     def _generate_articles_html(self, articles):
         """Génère le HTML pour la liste des articles."""
         if not articles:
             return '<p><em>Aucun article disponible</em></p>'
-        
+
         html_parts = []
-        for article in articles[:50]:  # Limiter à 50 articles pour la page statique
+        for article in articles[:40]:  # Limiter à 40 articles pour la page statique
             title = article.get('title', 'Sans titre')
             url = article.get('url', '#')
             source = article.get('source_name', article.get('source', 'Unknown'))
             date = article.get('date', '')
             summary = article.get('summary', article.get('description', 'Aucun résumé disponible'))
-            
+
             date_formatted = ''
             if date:
                 try:
@@ -443,7 +442,7 @@ class StaticHTMLGenerator:
                     date_formatted = date_obj.strftime('%d/%m/%Y à %H:%M')
                 except:
                     date_formatted = date
-            
+
             html_parts.append(f'''
                 <div class="article-item">
                     <div class="article-title">
@@ -456,30 +455,30 @@ class StaticHTMLGenerator:
                     <div class="article-summary">{summary}</div>
                 </div>
             ''')
-        
+
         return ''.join(html_parts)
-    
+
     def save_html(self, filename='veille_ia_rapport.html'):
         """Sauvegarde la page HTML."""
         html_content = self.generate_html()
         output_path = self.outputs_dir / filename
-        
+
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
-        
+
         print(f"✅ Rapport HTML généré : {output_path}")
         return output_path
-    
+
     def generate_and_send_report(self, save_local=True, send_email=True, generate_pdf=True, email_subject=None):
         """
         Génère le rapport complet et l'envoie par email.
-        
+
         Args:
             save_local: Sauvegarder le fichier HTML localement
             send_email: Envoyer le rapport par email
             generate_pdf: Générer et attacher un PDF
             email_subject: Sujet personnalisé pour l'email
-            
+
         Returns:
             dict: Résultats de l'opération
         """
@@ -489,12 +488,12 @@ class StaticHTMLGenerator:
             'email_sent': False,
             'errors': []
         }
-        
+
         print("🔄 Génération du rapport de veille...")
-        
+
         # Génération du contenu HTML
         html_content = self.generate_html()
-        
+
         # Sauvegarde locale
         if save_local:
             try:
@@ -504,7 +503,7 @@ class StaticHTMLGenerator:
                 error_msg = f"Erreur sauvegarde locale : {e}"
                 print(f"❌ {error_msg}")
                 results['errors'].append(error_msg)
-        
+
         # Envoi par email
         if send_email and EMAIL_AVAILABLE and EmailSender:
             try:
@@ -514,54 +513,54 @@ class StaticHTMLGenerator:
                     generate_pdf=generate_pdf,
                     custom_subject=email_subject
                 )
-                
+
                 results['email_sent'] = email_results['email_sent']
                 results['pdf_path'] = email_results['pdf_path']
-                
+
                 if email_results['errors']:
                     results['errors'].extend(email_results['errors'])
-                
+
                 if email_results['email_sent']:
                     print("📧 Rapport envoyé par email avec succès !")
                     if email_results['pdf_generated']:
                         print(f"📎 PDF joint : {email_results['pdf_path'].name}")
                 else:
                     print("❌ Échec de l'envoi par email")
-                    
+
             except Exception as e:
                 error_msg = f"Erreur envoi email : {e}"
                 print(f"❌ {error_msg}")
                 results['errors'].append(error_msg)
-        
+
         elif send_email and not EMAIL_AVAILABLE:
             error_msg = "Module d'envoi d'email non disponible"
             print(f"⚠️  {error_msg}")
             results['errors'].append(error_msg)
-        
+
         return results
 
 def main():
     """Fonction principale."""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='Générateur de rapport de veille IA')
-    parser.add_argument('--no-email', action='store_true', 
+    parser.add_argument('--no-email', action='store_true',
                        help='Ne pas envoyer par email')
-    parser.add_argument('--no-local', action='store_true', 
+    parser.add_argument('--no-local', action='store_true',
                        help='Ne pas sauvegarder localement')
-    parser.add_argument('--email-only', action='store_true', 
+    parser.add_argument('--email-only', action='store_true',
                        help='Envoyer seulement par email (sans sauvegarde locale)')
-    parser.add_argument('--no-pdf', action='store_true', 
+    parser.add_argument('--no-pdf', action='store_true',
                        help='Ne pas générer de PDF pour l\'email')
-    parser.add_argument('--subject', type=str, 
+    parser.add_argument('--subject', type=str,
                        help='Sujet personnalisé pour l\'email')
-    parser.add_argument('--test-email', action='store_true', 
+    parser.add_argument('--test-email', action='store_true',
                        help='Tester la configuration email')
-    
+
     args = parser.parse_args()
-    
+
     generator = StaticHTMLGenerator()
-    
+
     # Test de la configuration email
     if args.test_email:
         if EMAIL_AVAILABLE and EmailSender:
@@ -574,11 +573,11 @@ def main():
         else:
             print("❌ Module d'envoi d'email non disponible")
         return
-    
+
     # Génération du rapport
     if args.email_only:
         result = generator.generate_and_send_report(
-            save_local=False, 
+            save_local=False,
             send_email=True,
             generate_pdf=not args.no_pdf,
             email_subject=args.subject
@@ -590,26 +589,26 @@ def main():
             generate_pdf=not args.no_pdf,
             email_subject=args.subject
         )
-    
+
     # Affichage des résultats
     print("\n📋 Résumé de l'opération :")
     if result['html_path']:
         print(f"📄 HTML sauvegardé : {result['html_path']}")
         print(f"🌐 Accessible via : file://{result['html_path'].absolute()}")
-    
+
     if result['pdf_path']:
         print(f"� PDF généré : {result['pdf_path']}")
-    
+
     if result['email_sent']:
         print("📧 Email envoyé avec succès !")
     elif not args.no_email and not args.email_only:
         print("📧 Email non envoyé")
-    
+
     if result['errors']:
         print("\n⚠️  Erreurs rencontrées :")
         for error in result['errors']:
             print(f"   • {error}")
-    
+
     # Conseils d'utilisation
     if not args.email_only and not args.no_local:
         print("\n💡 Conseils d'utilisation :")
