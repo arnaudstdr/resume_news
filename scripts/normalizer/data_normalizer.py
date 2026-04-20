@@ -1,12 +1,18 @@
 import re
+import warnings
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 import logging
 from bs4 import BeautifulSoup
 import html
+
+warnings.filterwarnings("ignore", category=FutureWarning, module="huggingface_hub")
+
+from transformers import logging as transformers_logging
 from transformers.pipelines import pipeline
 
-# Configuration du logging
+transformers_logging.set_verbosity_error()
+
 logger = logging.getLogger(__name__)
 
 class DataNormalizer:
@@ -100,7 +106,7 @@ class DataNormalizer:
         # Vérification basique du format URL
         url_pattern = re.compile(
             r'^https?://'  # http:// ou https://
-            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domaine
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,63}\.?|'  # domaine
             r'localhost|'  # localhost
             r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # IP
             r'(?::\d+)?'  # port optionnel
@@ -220,9 +226,9 @@ class DataNormalizer:
                 # Fallback sur summary si content vide
                 content = article.get('summary', '')
             if not content or not isinstance(content, str) or not content.strip():
-                logger.warning("Aucun contenu ni résumé à résumer pour l'article")
+                logger.debug("Aucun contenu ni résumé à résumer pour l'article")
                 return ""
-            result = self.summarizer(content, max_length=130, min_length=30, do_sample=False)
+            result = self.summarizer(content, max_length=130, min_length=30, do_sample=False, truncation=True)
             if result and isinstance(result, list) and isinstance(result[0], dict) and 'summary_text' in result[0]:
                 return result[0]['summary_text']
             else:
