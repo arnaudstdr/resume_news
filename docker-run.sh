@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Script de lancement du pipeline avec Docker
+# Script de lancement du pipeline avec Docker.
+# Compatible cron : pas de TTY, logs sur stdout/stderr.
 
 set -e
 
@@ -13,7 +14,7 @@ if [ ! -f .env ]; then
     echo "📝 Pour créer votre fichier .env, exécutez:"
     echo "   cp .env.example .env"
     echo ""
-    echo "Puis éditez le fichier .env et remplacez 'votre_clé_api_mistral' par votre vraie clé API Mistral."
+    echo "Puis éditez le fichier .env pour configurer OLLAMA_URL et OLLAMA_MODEL."
     exit 1
 fi
 
@@ -25,10 +26,11 @@ if ! docker image inspect resume_news:latest >/dev/null 2>&1; then
     docker build -t resume_news:latest .
 fi
 
-# Lancement du container avec montage du fichier .env et du dossier outputs
 echo "🚀 Lancement du pipeline..."
-docker run --rm -it \
+docker run --rm \
+    --add-host=host.docker.internal:host-gateway \
     -v "$(pwd)/.env:/app/.env:ro" \
+    -v "$(pwd)/config:/app/config" \
     -v "$(pwd)/outputs:/app/outputs" \
     -v "$(pwd)/data:/app/data" \
     resume_news:latest

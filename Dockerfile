@@ -34,11 +34,6 @@ RUN mkdir -p outputs data
 
 EXPOSE 8000
 
-# Le fichier .env doit être monté ou copié lors de l'exécution
-# Vérification que le fichier .env existe avant de lancer le pipeline
-CMD if [ ! -f .env ]; then \
-        echo "❌ Erreur: Le fichier .env est requis."; \
-        echo "📝 Créez un fichier .env avec: MISTRAL_API_KEY=\"votre_clé_api_mistral\""; \
-        exit 1; \
-    fi && \
-    bash start_pipeline.sh
+# Le fichier .env doit être monté ou copié lors de l'exécution.
+# La vérification de sa présence est faite dans start_pipeline.sh.
+CMD ["bash", "start_pipeline.sh"]
