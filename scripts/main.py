@@ -1,10 +1,16 @@
 import os
 import json
 import logging
+import sys
+import sentry_sdk
+from dotenv import load_dotenv
 from scraper.rss_scraper import run_all as run_scraper
 from normalizer.data_normalizer import DataNormalizer
 from database.db_manager import DatabaseManager
-import sys
+
+load_dotenv()
+if dsn := os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(dsn=dsn, traces_sample_rate=1.0)
 
 # Configuration du logging
 logging.basicConfig(
@@ -87,6 +93,7 @@ def main():
         logger.info("Pipeline terminé avec succès")
 
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         logger.error(f"Erreur critique dans le pipeline: {str(e)}")
 
     finally:

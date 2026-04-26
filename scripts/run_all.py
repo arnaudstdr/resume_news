@@ -10,6 +10,12 @@ import os
 import sys
 import logging
 from datetime import datetime
+import sentry_sdk
+from dotenv import load_dotenv
+
+load_dotenv()
+if dsn := os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(dsn=dsn, traces_sample_rate=1.0)
 
 # Ajouter le répertoire parent au chemin pour les imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -44,6 +50,7 @@ def main():
     try:
         rss_scraper.run_all()
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         logger.error(f"Erreur lors du scraping RSS : {e}")
         return
 
@@ -62,6 +69,7 @@ def main():
         with open(os.path.join(NORMALIZED_DIR, "normalized_articles.json"), 'w', encoding='utf-8') as f:
             __import__('json').dump(normalized, f, ensure_ascii=False, indent=2)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         logger.error(f"Erreur lors de la normalisation : {e}")
         return
 
@@ -87,6 +95,7 @@ def main():
 
         db.disconnect()
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         logger.error(f"Erreur lors de l'insertion en base : {e}")
         return
 
@@ -112,6 +121,7 @@ def main():
         else:
             logger.warning("Aucun article à inclure dans le markdown complet.")
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         logger.error(f"Erreur lors de la génération du résumé : {e}")
         return
 
