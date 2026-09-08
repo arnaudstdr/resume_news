@@ -126,6 +126,33 @@ class WeeklyDigest:
         return "\n".join(content_list)
 
 
+    @staticmethod
+    def _is_docker_container() -> bool:
+        """Détecte si le code s'exécute dans un conteneur Docker."""
+        return os.path.exists("/.dockerenv") or os.path.exists("/.dockerinit")
+
+    @staticmethod
+    def _normalize_ollama_url(url: str) -> str:
+        """
+        Normalise l'URL du daemon Ollama et avertit en cas de configuration
+        invalide dans un conteneur Docker (localisation courante du bug
+        'HTTPConnectionPool(host='localhost', port=11434)').
+        """
+        if not url:
+            url = "http://localhost:11434/api/generate"
+        if not url.rstrip("/").endswith("/api/generate"):
+            url = url.rstrip("/") + "/api/generate"
+        if WeeklyDigest._is_docker_container():
+            host = url.split("://", 1)[-1].split("/", 1)[0].split(":", 1)[0]
+            if host in ("localhost", "127.0.0.1"):
+                logger.warning(
+                    "OLLAMA_URL pointe vers %s alors que le pipeline tourne dans un "
+                    "conteneur Docker. Ollama est probablement sur l'hôte : utilisez "
+                    "http://host.docker.internal:11434/api/generate (voir .env).",
+                    host,
+                )
+        return url
+
     def ollama_generate(self, prompt: str, model: Optional[str] = None, max_tokens: int = 3500) -> str:
         """
         Utilise l'API Ollama pour générer du texte avec le modèle spécifié.
@@ -133,6 +160,7 @@ class WeeklyDigest:
         """
         url = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate")
         resolved_model = model or os.environ.get("OLLAMA_MODEL", "gemma4:31b-cloud")
+        url = self._normalize_ollama_url(url)
         try:
             response = requests.post(
                 url,

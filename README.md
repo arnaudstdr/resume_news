@@ -112,6 +112,15 @@ ollama serve             # if not already running
 
 Then copy `.env.example` to `.env` and adjust `OLLAMA_URL` / `OLLAMA_MODEL` if needed.
 
+> ⚠️ **Piège fréquent : `localhost` vs `host.docker.internal`**
+> Le pipeline s'exécute en réalité dans un conteneur Docker. Dans ce conteneur,
+> `localhost` ne désigne pas l'hôte où tourne Ollama : le rapport de veille arrive
+> alors vide avec l'erreur `HTTPConnectionPool(host='localhost', port=11434)`.
+> Depuis Docker, `OLLAMA_URL` doit utiliser `host.docker.internal` :
+> `http://host.docker.internal:11434/api/generate` (comme dans `.env.example`).
+> La valeur `http://localhost:11434` n'est valable que pour un lancement hors conteneur.
+
+
 ## Run locally (Docker)
 
 ```bash
